@@ -14,7 +14,6 @@ import { ElementPlusResolver } from 'unplugin-vue-components/resolvers';
 
 import svgSpritePlugin from '@pivanov/vite-plugin-svg-sprite';
 // import svgSprites from 'rollup-plugin-svg-sprites';
-import { viteMockServe } from 'vite-plugin-mock';
 
 // https://vitejs.dev/config/
 export default defineConfig(({ command, mode }) => {
@@ -22,7 +21,6 @@ export default defineConfig(({ command, mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   console.log('vite.config env.VITE_ENV=', env.VITE_ENV);
   // According to the project configuration. Can be configured in the .env file
-  const prodMock = true;
 
   // 解决终端 optimized dependencies changed. reloading 问题
   const optimizeDepsElementPlusIncludes = ['element-plus/es'];
@@ -65,19 +63,6 @@ export default defineConfig(({ command, mode }) => {
         symbolId: 'icon-[name]',
 
         inject: 'body-last' // 'body-prepend' | 'body-append' | false
-      }),
-      // https://openbase.com/js/vite-plugin-mock
-      viteMockServe({
-        ignore: /^_/,
-        mockPath: './mock/',
-        supportTs: true,
-        watchFiles: true,
-        localEnabled: command === 'serve',
-        prodEnabled: command !== 'serve' && prodMock,
-        // configPath: './mock/index.js',
-        logger: false,
-        injectCode: `import { setupProdMockServer } from '../mock/_createProductionServer.js';
-      setupProdMockServer();`
       })
     ],
     server: {

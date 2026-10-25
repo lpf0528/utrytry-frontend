@@ -9,8 +9,6 @@
       <template v-if="device !== 'mobile'">
         <search id="header-search" class="right-menu-item" />
 
-        <error-log class="errLog-container right-menu-item hover-effect" />
-
         <screenfull id="screenfull" class="right-menu-item hover-effect" />
 
         <el-tooltip content="全局组件尺寸" effect="dark" placement="bottom">
@@ -34,12 +32,6 @@
             <router-link to="/">
               <el-dropdown-item>首页</el-dropdown-item>
             </router-link>
-            <a target="_blank" href="https://github.com/midfar/vue3-element-admin">
-              <el-dropdown-item>项目地址</el-dropdown-item>
-            </a>
-            <a target="_blank" href="https://vue3-element-admin-site.midfar.com/">
-              <el-dropdown-item>文档地址</el-dropdown-item>
-            </a>
             <el-dropdown-item divided @click="logout">
               <span style="display:block;">退出登录</span>
             </el-dropdown-item>
@@ -55,7 +47,6 @@ import { mapState } from 'pinia';
 import store from '@/store';
 import Breadcrumb from '@/components/Breadcrumb';
 import Hamburger from '@/components/Hamburger';
-import ErrorLog from '@/components/ErrorLog';
 import Screenfull from '@/components/Screenfull';
 import SizeSelect from '@/components/SizeSelect';
 import Search from '@/components/HeaderSearch';
@@ -66,7 +57,6 @@ export default defineComponent({
   components: {
     Breadcrumb,
     Hamburger,
-    ErrorLog,
     Screenfull,
     SizeSelect,
     Search,
@@ -116,11 +106,6 @@ export default defineComponent({
 
   .breadcrumb-container {
     float: left;
-  }
-
-  .errLog-container {
-    display: inline-block;
-    vertical-align: top;
   }
 
   .right-menu {
