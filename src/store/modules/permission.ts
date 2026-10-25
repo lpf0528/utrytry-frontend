@@ -34,6 +34,8 @@ export function filterAsyncRoutes(routes: RouteRecordRaw[], permissions: string[
     if (hasPermission(permissions, tmp)) {
       if (tmp.children) {
         tmp.children = filterAsyncRoutes(tmp.children, permissions);
+        // 子路由全部被过滤时,父级菜单也不应出现(否则会显示空的父级入口)
+        if (tmp.children.length === 0) return;
       }
       res.push(tmp);
     }

@@ -75,6 +75,28 @@ export const constantRoutes: RouteRecordRaw[] = [
  * the routes that need to be dynamically loaded based on user permissions/roles
  */
 export const asyncRoutes: RouteRecordRaw[] = [
+  {
+    path: '/system',
+    component: Layout,
+    // 父级不可点击;不设具体子路由跳转,因为不同用户可见的子菜单不同
+    redirect: 'noRedirect',
+    name: 'System',
+    meta: { title: '系统管理', icon: 'component' },
+    children: [
+      {
+        path: 'user',
+        component: () => import('@/views/system/user/index.vue'),
+        name: 'SystemUser',
+        meta: { title: '用户管理', icon: 'peoples', permissions: ['user:view'], noCache: true }
+      },
+      {
+        path: 'role',
+        component: () => import('@/views/system/role/index.vue'),
+        name: 'SystemRole',
+        meta: { title: '角色管理', icon: 'lock', permissions: ['role:view'], noCache: true }
+      }
+    ]
+  },
   // 404 page must be placed at the end !!!
   { path: '/:pathMatch(.*)*', redirect: '/404', meta: { hidden: true }}
 ];
