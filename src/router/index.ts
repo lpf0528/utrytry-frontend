@@ -97,6 +97,27 @@ export const asyncRoutes: RouteRecordRaw[] = [
       }
     ]
   },
+  {
+    path: '/book-quiz',
+    component: Layout,
+    redirect: '/book-quiz/list',
+    name: 'BookQuiz',
+    meta: { title: '电子书测验', icon: 'education' },
+    children: [
+      {
+        path: 'list',
+        component: () => import('@/views/book-quiz/index.vue'),
+        name: 'BookQuizList',
+        meta: { title: '电子书库', icon: 'list', noCache: true }
+      },
+      {
+        path: 'read/:bookId',
+        component: () => import('@/views/book-quiz/read/index.vue'),
+        name: 'BookQuizReader',
+        meta: { title: '章节阅读', hidden: true, noCache: true }
+      }
+    ]
+  },
   // 404 page must be placed at the end !!!
   { path: '/:pathMatch(.*)*', redirect: '/404', meta: { hidden: true }}
 ];

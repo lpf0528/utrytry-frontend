@@ -41,7 +41,39 @@ service.interceptors.response.use(
    * Here is just an example
    * You can also judge the status by HTTP Status Code
    */
-  response => {
+  async response => {
+    // 处理二进制 Blob 响应 (如书籍封面图片流)
+    if (response.config.responseType === 'blob' || response.data instanceof Blob) {
+      if (response.data.type && response.data.type.includes('application/json')) {
+        try {
+          const text = await response.data.text();
+          const jsonRes = JSON.parse(text);
+          if (jsonRes.code !== 20000) {
+            ElMessage({
+              message: jsonRes.message || 'Error',
+              type: 'error',
+              duration: 5 * 1000
+            });
+            if (jsonRes.code === 50008 || jsonRes.code === 50012 || jsonRes.code === 50014) {
+              ElMessageBox.confirm('登录状态已失效,可以取消留在当前页面,或重新登录', '确认退出', {
+                confirmButtonText: '重新登录',
+                cancelButtonText: '取消',
+                type: 'warning'
+              }).then(() => {
+                store.user().resetToken();
+                location.reload();
+              });
+            }
+            return Promise.reject(new Error(jsonRes.message || 'Error'));
+          }
+          return jsonRes;
+        } catch {
+          return response.data;
+        }
+      }
+      return response.data;
+    }
+
     const res = response.data;
 
     // if the custom code is not 20000, it is judged as an error.
