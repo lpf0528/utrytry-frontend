@@ -11,6 +11,9 @@
               <el-tab-pane label="账号信息" name="account">
                 <account :user="user" />
               </el-tab-pane>
+              <el-tab-pane label="修改密码" name="password">
+                <password />
+              </el-tab-pane>
             </el-tabs>
           </el-card>
         </el-col>
@@ -23,12 +26,13 @@
 import { mapState } from 'pinia';
 import UserCard from './components/UserCard.vue';
 import Account from './components/Account.vue';
+import Password from './components/Password.vue';
 import { defineComponent } from 'vue';
 import store from '@/store';
 
 export default defineComponent({
   name: 'Profile',
-  components: { UserCard, Account },
+  components: { UserCard, Account, Password },
   data() {
     return {
       user: {},
@@ -37,15 +41,14 @@ export default defineComponent({
   },
   computed: {
     ...mapState(store.user, [
+      'username',
       'name',
       'avatar',
-      'roles'
+      'roles',
+      'email',
+      'phone',
+      'introduction'
     ])
-  },
-  watch: {
-    name(newVal) {
-      this.user.name = newVal;
-    }
   },
   created() {
     this.getUser();
@@ -53,9 +56,12 @@ export default defineComponent({
   methods: {
     getUser() {
       this.user = {
+        username: this.username,
         name: this.name,
         role: this.roles.join(' | '),
-        email: 'admin@test.com',
+        email: this.email,
+        phone: this.phone,
+        introduction: this.introduction,
         avatar: this.avatar
       };
     }

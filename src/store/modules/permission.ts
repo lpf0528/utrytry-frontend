@@ -8,32 +8,32 @@ interface IPermissionState {
 }
 
 /**
- * Use meta.role to determine if the current user has permission
- * @param roles
- * @param route
+ * 按 meta.permissions 判断当前用户是否可访问路由:
+ * 未声明 permissions 的路由所有人可访问,声明了则拥有其中任意一个权限即可
+ * @param permissions 当前用户权限标识
+ * @param route 路由
  */
-function hasPermission(roles:string[], route:RouteRecordRaw):boolean {
-  if (route.meta && route.meta.roles) {
-    const rolesArr = route.meta.roles as string[];
-    return roles.some(role => rolesArr.includes(role));
-  } else {
-    return true;
+function hasPermission(permissions: string[], route: RouteRecordRaw): boolean {
+  if (route.meta && route.meta.permissions) {
+    const required = route.meta.permissions as string[];
+    return permissions.some(p => required.includes(p));
   }
+  return true;
 }
 
 /**
- * Filter asynchronous routing tables by recursion
+ * 递归过滤异步路由表
  * @param routes asyncRoutes
- * @param roles
+ * @param permissions 当前用户权限标识
  */
-export function filterAsyncRoutes(routes:RouteRecordRaw[], roles: string[]): Array<RouteRecordRaw> {
-  const res:Array<RouteRecordRaw> = [];
+export function filterAsyncRoutes(routes: RouteRecordRaw[], permissions: string[]): Array<RouteRecordRaw> {
+  const res: Array<RouteRecordRaw> = [];
 
   routes.forEach(route => {
     const tmp = { ...route };
-    if (hasPermission(roles, tmp)) {
+    if (hasPermission(permissions, tmp)) {
       if (tmp.children) {
-        tmp.children = filterAsyncRoutes(tmp.children, roles);
+        tmp.children = filterAsyncRoutes(tmp.children, permissions);
       }
       res.push(tmp);
     }
@@ -54,13 +54,9 @@ export default defineStore({
       this.addRoutes = routes;
       this.routes = constantRoutes.concat(routes);
     },
-    generateRoutes(roles: string[]) {
-      let accessedRoutes;
-      if (roles.includes('admin')) {
-        accessedRoutes = asyncRoutes || [];
-      } else {
-        accessedRoutes = filterAsyncRoutes(asyncRoutes, roles);
-      }
+    // admin 的全部权限由后端返回,这里不再硬编码角色名
+    generateRoutes(permissions: string[]) {
+      const accessedRoutes = filterAsyncRoutes(asyncRoutes, permissions);
       this.setRoutes(accessedRoutes);
       return accessedRoutes;
     }

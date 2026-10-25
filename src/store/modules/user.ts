@@ -1,127 +1,101 @@
 import { defineStore } from 'pinia';
-import { login as apiLogin, logout as apiLogout, getInfo as apiGetInfo } from '@/api/user';
+import { login as apiLogin, logout as apiLogout, getInfo as apiGetInfo, updateProfile as apiUpdateProfile } from '@/api/user';
 import { getToken, setToken, removeToken } from '@/utils/auth';
-import router, { resetRouter } from '@/router';
+import { resetRouter } from '@/router';
 import tagsViewStore from './tagsView';
-import permissionStore from './permission';
 
 export interface IUserState {
   token: string;
-  userId: string,
+  userId: number | null;
+  username: string;
   name: string;
   avatar: string;
   introduction: string;
+  email: string | null;
+  phone: string | null;
   roles: string[];
+  // 权限标识列表(如 user:view);admin 的全部权限由后端返回
+  permissions: string[];
 }
 
 export default defineStore({
   id: 'user',
-  state: ():IUserState => ({
-    token: getToken(),
-    userId: '',
+  state: (): IUserState => ({
+    token: getToken() || '',
+    userId: null,
+    username: '',
     name: '',
     avatar: '',
     introduction: '',
-    roles: []
+    email: null,
+    phone: null,
+    roles: [],
+    permissions: []
   }),
   getters: {},
   actions: {
-    // user login
-    login(userInfo):Promise<void> {
+    // 登录:保存 token
+    async login(userInfo): Promise<void> {
       const { username, password } = userInfo;
-      return new Promise((resolve, reject) => {
-        apiLogin({ username: username.trim(), password: password }).then(response => {
-          const { data } = response;
-          this.token = data.token;
-          setToken(data.token);
-          resolve();
-        }).catch(error => {
-          reject(error);
-        });
-      });
+      const { data } = await apiLogin({ username: username.trim(), password });
+      this.token = data.token;
+      setToken(data.token);
     },
 
-    // get user info
-    getInfo() {
-      return new Promise((resolve, reject) => {
-        apiGetInfo(this.token).then(response => {
-          const { data } = response;
-
-          if (!data) {
-            reject('Verification failed, please Login again.');
-          }
-
-          const { roles, name, avatar, introduction } = data;
-
-          // roles must be a non-empty array
-          if (!roles || roles.length <= 0) {
-            reject('getInfo: roles must be a non-null array!');
-          }
-
-          this.roles = roles;
-          this.name = name;
-          this.avatar = avatar;
-          this.introduction = introduction;
-          resolve(data);
-        }).catch(error => {
-          reject(error);
-        });
-      });
+    // 用后端返回的用户信息刷新 store(getInfo 与资料修改共用)
+    setUserInfo(data) {
+      this.userId = data.userId;
+      this.username = data.username;
+      this.name = data.name;
+      this.avatar = data.avatar;
+      this.introduction = data.introduction;
+      this.email = data.email;
+      this.phone = data.phone;
+      this.roles = data.roles || [];
+      this.permissions = data.permissions || [];
     },
 
-    // user logout
-    logout():Promise<void> {
-      return new Promise((resolve, reject) => {
-        apiLogout(this.token).then(() => {
-          this.token = '';
-          this.roles = [];
-          removeToken();
-          resetRouter();
+    // 获取当前用户信息(含权限)
+    async getInfo() {
+      const { data } = await apiGetInfo();
+      if (!data) {
+        throw new Error('Verification failed, please Login again.');
+      }
+      this.setUserInfo(data);
+      return data;
+    },
 
-          // reset visited views and cached views
-          // to fixed https://github.com/PanJiaChen/vue-element-admin/issues/2485
-          tagsViewStore().delAllViews();
+    // 修改个人资料,成功后同步 store
+    async updateProfile(form) {
+      const { data } = await apiUpdateProfile(form);
+      this.setUserInfo(data);
+      return data;
+    },
 
-          resolve();
-        }).catch(error => {
-          reject(error);
-        });
-      });
+    // 退出登录:服务端失败(如 token 已失效)也要清理本地状态
+    async logout(): Promise<void> {
+      try {
+        await apiLogout();
+      } finally {
+        this.resetState();
+        resetRouter();
+        // 清空已访问/缓存的标签页
+        tagsViewStore().delAllViews();
+      }
+    },
+
+    // 清理本地登录态(不请求后端)
+    resetState() {
+      this.token = '';
+      this.userId = null; // 置空后下次进入会重新拉取用户信息并生成路由
+      this.roles = [];
+      this.permissions = [];
+      removeToken();
     },
 
     // remove token
     resetToken() {
-      this.token = '';
-      this.roles = [];
-      removeToken();
-    },
-
-    // dynamically modify permissions
-    async changeRoles(role) {
-      const token = role + '-token';
-
-      this.token = token;
-      setToken(token);
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const infoRes = await this.getInfo() as any;
-      let roles = [];
-      if (infoRes.roles) {
-        roles = infoRes.roles;
-      }
-
-      resetRouter();
-
-      // generate accessible routes map based on roles
-      const accessRoutes = await permissionStore().generateRoutes(roles);
-      // dynamically add accessible routes
-      // router.addRoutes(accessRoutes);
-      accessRoutes.forEach(item => {
-        router.addRoute(item);
-      });
-
-      // reset visited views and cached views
-      tagsViewStore().delAllViews();
+      this.resetState();
     }
   }
 });

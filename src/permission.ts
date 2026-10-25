@@ -27,25 +27,16 @@ router.beforeEach(async (to, from, next) => {
       NProgress.done(); // hack: https://github.com/PanJiaChen/vue-element-admin/pull/2939
       next({ path: '/' });
     } else {
-      // determine whether the user has obtained his permission roles through getInfo
-      const hasRoles = userStore().roles && userStore().roles.length > 0;
-      // console.log('hasRoles=', hasRoles);
-      if (hasRoles) {
+      // 以 userId 是否存在判断是否已拉取过用户信息(权限可能为空数组,不能用它判断)
+      const hasInfo = userStore().userId !== null;
+      if (hasInfo) {
         next();
       } else {
         try {
-          // get user info
-          // note: roles must be a object array! such as: ['admin'] or ,['developer','editor']
+          // 获取用户信息(含 permissions),再按权限生成可访问路由
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const infoRes = await userStore().getInfo() as any;
-          let roles = [];
-          if (infoRes.roles) {
-            roles = infoRes.roles;
-          }
-
-          // generate accessible routes map based on roles
-          const accessRoutes = await permissionStore().generateRoutes(roles);
-          // console.log('accessRoutes=', accessRoutes)
+          const accessRoutes = await permissionStore().generateRoutes(infoRes.permissions || []);
 
           // dynamically add accessible routes
           // router.addRoutes(accessRoutes);
