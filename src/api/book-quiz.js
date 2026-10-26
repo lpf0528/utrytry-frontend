@@ -62,6 +62,33 @@ export function getBookChapters(bookId) {
 }
 
 /**
+ * AI 整理目录预览 (仅返回建议, 不写库; 仅所有者/admin 可用)
+ * 后端按批串行调用 LLM, 总耗时上限约 180s, 因此单独放宽前端超时
+ * @param {string} bookId 书籍 ID
+ * @returns {Promise<{data: {chapters: Array<{id, level, parent_id, is_disabled}>, warnings: string[]}}>}
+ */
+export function organizeChaptersPreview(bookId) {
+  return request({
+    url: `/book-quiz/books/${bookId}/chapters/organize-preview`,
+    method: 'post',
+    timeout: 200 * 1000
+  });
+}
+
+/**
+ * 保存目录结构 (全量覆盖 level / parent_id / is_disabled; 仅所有者/admin 可用)
+ * @param {string} bookId 书籍 ID
+ * @param {Array<{id: string, level: number, parent_id: string|null, is_disabled: 0|1}>} chapters 全部章节
+ */
+export function saveChapterStructure(bookId, chapters) {
+  return request({
+    url: `/book-quiz/books/${bookId}/chapters/structure`,
+    method: 'put',
+    data: { chapters }
+  });
+}
+
+/**
  * 获取单个章节详情 (清洗后正文、上下章 ID)
  * @param {string} chapterId 全局章节 ID ({book_id}_{index})
  */

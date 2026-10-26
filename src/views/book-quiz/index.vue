@@ -208,6 +208,14 @@
               <span v-else style="flex: 1"></span>
 
               <el-button
+                v-if="book.status === 'COMPLETED'"
+                size="small"
+                link
+                @click="goToToc(book.id)"
+              >
+                目录
+              </el-button>
+              <el-button
                 v-if="canDeleteBook(book)"
                 type="danger"
                 size="small"
@@ -288,7 +296,7 @@
               {{ formatDate(row.created_at) }}
             </template>
           </el-table-column>
-          <el-table-column label="操作" width="160" align="center" fixed="right">
+          <el-table-column label="操作" width="220" align="center" fixed="right">
             <template #default="{ row }">
               <el-button
                 v-if="row.status === 'COMPLETED'"
@@ -305,6 +313,14 @@
                 @click="openProgressMonitor(row)"
               >
                 查看进度
+              </el-button>
+              <el-button
+                v-if="row.status === 'COMPLETED'"
+                link
+                type="primary"
+                @click="goToToc(row.id)"
+              >
+                目录
               </el-button>
               <el-button
                 v-if="canDeleteBook(row)"
@@ -515,6 +531,9 @@ export default defineComponent({
     },
     goToReader(bookId) {
       this.$router.push(`/book-quiz/read/${bookId}`);
+    },
+    goToToc(bookId) {
+      this.$router.push(`/book-quiz/toc/${bookId}`);
     },
     handleDelete(book) {
       ElMessageBox.confirm(

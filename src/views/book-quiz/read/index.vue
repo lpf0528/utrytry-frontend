@@ -61,6 +61,7 @@
             class="chapter-item"
             :class="{
               'is-active': currentChapterId === item.id,
+              'is-disabled': item.is_disabled === 1,
               [`level-${item.level || 0}`]: true
             }"
             @click="selectChapter(item.id)"
@@ -96,6 +97,13 @@
             @click="goBack"
           >
             ← 返回书库
+          </el-button>
+          <el-button
+            link
+            class="toc-btn"
+            @click="goToToc"
+          >
+            整理目录
           </el-button>
         </div>
 
@@ -298,6 +306,9 @@ export default defineComponent({
   methods: {
     goBack() {
       this.$router.push('/book-quiz/list');
+    },
+    goToToc() {
+      this.$router.push(`/book-quiz/toc/${this.bookId}`);
     },
     toggleSidebar() {
       this.isSidebarCollapsed = !this.isSidebarCollapsed;
@@ -566,6 +577,11 @@ export default defineComponent({
             color: var(--active-item-color);
             font-weight: 600;
             border-left: 3px solid var(--active-item-color);
+          }
+
+          // 已禁用章节（不参与出题与复习）置灰，仍可点击阅读
+          &.is-disabled .chapter-title {
+            opacity: 0.45;
           }
 
           &.level-1 {

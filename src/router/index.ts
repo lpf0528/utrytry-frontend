@@ -115,6 +115,12 @@ export const asyncRoutes: RouteRecordRaw[] = [
         component: () => import('@/views/book-quiz/read/index.vue'),
         name: 'BookQuizReader',
         meta: { title: '章节阅读', hidden: true, noCache: true }
+      },
+      {
+        path: 'toc/:bookId',
+        component: () => import('@/views/book-quiz/toc/index.vue'),
+        name: 'BookQuizToc',
+        meta: { title: '目录整理', hidden: true, noCache: true }
       }
     ]
   },
