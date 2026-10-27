@@ -27,6 +27,17 @@ export function getBookStatus(bookId) {
 }
 
 /**
+ * 获取单个书籍详情
+ * @param {string} bookId 书籍 ID
+ */
+export function getBook(bookId) {
+  return request({
+    url: `/book-quiz/books/${bookId}`,
+    method: 'get'
+  });
+}
+
+/**
  * 分页获取书库列表
  * @param {object} params 查询参数: { page, limit, scope: 'mine'|'public', keyword }
  */
@@ -52,12 +63,14 @@ export function getBookCover(bookId) {
 
 /**
  * 获取书籍章节树形目录 (不含大文本 content 字段)
- * @param {string} bookId 书籍 ID
+ * @param {string} book_id 书籍 ID
+ * @param {boolean} withFirst 是否顺便带出首章正文 (首屏优化)
  */
-export function getBookChapters(bookId) {
+export function getBookChapters(bookId, withFirst = false) {
   return request({
     url: `/book-quiz/books/${bookId}/chapters`,
-    method: 'get'
+    method: 'get',
+    params: { with_first: withFirst }
   });
 }
 
@@ -84,7 +97,21 @@ export function saveChapterStructure(bookId, chapters) {
   return request({
     url: `/book-quiz/books/${bookId}/chapters/structure`,
     method: 'put',
-    data: { chapters }
+    data: { chapters },
+    timeout: 30000 // 批量保存可能涉及数百行更新，放宽超时到 30s
+  });
+}
+
+/**
+ * 快捷更新单个章节的禁用状态
+ * @param {string} chapterId 章节 ID
+ * @param {0|1} isDisabled 是否禁用
+ */
+export function updateChapterDisabled(chapterId, isDisabled) {
+  return request({
+    url: `/book-quiz/chapters/${chapterId}/is_disabled`,
+    method: 'patch',
+    data: { is_disabled: isDisabled }
   });
 }
 

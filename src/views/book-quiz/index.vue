@@ -207,14 +207,7 @@
               </el-button>
               <span v-else style="flex: 1"></span>
 
-              <el-button
-                v-if="book.status === 'COMPLETED'"
-                size="small"
-                link
-                @click="goToToc(book.id)"
-              >
-                目录
-              </el-button>
+
               <el-button
                 v-if="canDeleteBook(book)"
                 type="danger"
@@ -314,14 +307,7 @@
               >
                 查看进度
               </el-button>
-              <el-button
-                v-if="row.status === 'COMPLETED'"
-                link
-                type="primary"
-                @click="goToToc(row.id)"
-              >
-                目录
-              </el-button>
+
               <el-button
                 v-if="canDeleteBook(row)"
                 link
@@ -532,9 +518,7 @@ export default defineComponent({
     goToReader(bookId) {
       this.$router.push(`/book-quiz/read/${bookId}`);
     },
-    goToToc(bookId) {
-      this.$router.push(`/book-quiz/toc/${bookId}`);
-    },
+
     handleDelete(book) {
       ElMessageBox.confirm(
         `确定要删除书籍《${book.title}》吗？删除后其所有章节及正文将无法恢复。`,
