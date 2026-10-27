@@ -94,6 +94,12 @@ export const asyncRoutes: RouteRecordRaw[] = [
         component: () => import('@/views/system/role/index.vue'),
         name: 'SystemRole',
         meta: { title: '角色管理', icon: 'lock', permissions: ['role:view'], noCache: true }
+      },
+      {
+        path: 'llm-log',
+        component: () => import('@/views/system/llm-log/index.vue'),
+        name: 'SystemLLMLog',
+        meta: { title: 'LLM 调用日志', icon: 'documentation', permissions: ['llm:log:view'], noCache: true }
       }
     ]
   },
